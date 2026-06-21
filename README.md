@@ -26,3 +26,10 @@ official CPCB AQI.
 ```bash
 npm run check
 ```
+
+To verify the configured OpenAQ location against the live API, copy `.env.example`
+to `.env`, add your key, and run:
+
+```bash
+npm run test:live
+```

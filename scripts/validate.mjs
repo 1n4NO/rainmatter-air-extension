@@ -40,6 +40,10 @@ if (!manifest.action?.default_popup) {
   throw new Error('popup must be configured');
 }
 
+if (manifest.host_permissions?.includes('<all_urls>')) {
+  throw new Error('host_permissions must not grant <all_urls> access');
+}
+
 if (missing.length) {
   throw new Error(`missing files: ${missing.join(', ')}`);
 }

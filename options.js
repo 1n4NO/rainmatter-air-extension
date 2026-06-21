@@ -27,10 +27,21 @@ async function load() {
 
 async function save() {
   await runWithStatus('Saving and testing settings…', async () => {
-    const response = await chrome.runtime.sendMessage({ type: 'air-quality:save-settings', settings: read() });
+    const settings = read();
+    await ensureApiPermission(settings.apiBaseUrl);
+    const response = await chrome.runtime.sendMessage({ type: 'air-quality:save-settings', settings });
     if (!response?.ok) throw new Error(response?.error || response?.snapshot?.message || 'Unable to save settings.');
     return 'Settings saved and connection verified.';
   });
+}
+
+async function ensureApiPermission(apiBaseUrl) {
+  const url = new URL(apiBaseUrl);
+  if (url.origin === 'https://api.openaq.org') return;
+
+  const origin = `${url.origin}/*`;
+  const granted = await chrome.permissions.request({ origins: [origin] });
+  if (!granted) throw new Error(`Permission to connect to ${url.origin} was not granted.`);
 }
 
 function read() {
