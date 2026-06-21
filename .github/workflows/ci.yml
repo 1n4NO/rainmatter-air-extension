@@ -29,6 +29,15 @@ jobs:
       - name: Validate and test
         run: npm run check
 
+      - name: Set up Chrome for Testing
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v2
+
+      - name: Run Chrome smoke test
+        run: npm run test:browser
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+
       - name: Build extension package
         run: npm run package
 
@@ -39,4 +48,3 @@ jobs:
           path: dist/*.zip
           if-no-files-found: error
           retention-days: 14
-

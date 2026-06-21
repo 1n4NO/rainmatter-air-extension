@@ -24,6 +24,7 @@ const required = [
   '.github/pull_request_template.md',
   'CONTRIBUTING.md',
   '.nvmrc',
+  'scripts/test-browser.mjs',
 ];
 
 const manifest = JSON.parse(await fs.readFile(path.join(root, 'manifest.json'), 'utf8'));

@@ -10,6 +10,7 @@
   "scripts": {
     "check": "node scripts/validate.mjs && node --test test/*.test.mjs",
     "test": "node --test test/*.test.mjs",
+    "test:browser": "node scripts/test-browser.mjs",
     "test:live": "node scripts/test-live.mjs",
     "icons": "node scripts/generate-icons.mjs",
     "package": "npm run check && node scripts/package.mjs"

@@ -10,6 +10,10 @@ This project requires Node.js 24 or newer for the local validation and packaging
 4. Make a focused change with tests where the behavior can be exercised outside Chrome.
 5. Run `npm run check` again before opening a pull request.
 
+Run `npm run test:browser` for changes that affect the manifest, service worker, popup,
+or Settings page. The command requires Chrome for Testing or Chromium; set
+`CHROME_PATH` if its executable is not in a standard location.
+
 Use `npm run package` to create the same ZIP artifact produced by continuous integration.
 
 ## Credentials
@@ -23,4 +27,3 @@ Keep permissions narrowly scoped. Any change to manifest permissions or data han
 ## Pull requests
 
 Keep commits focused and explain user-visible behavior, validation performed, and any remaining limitations. Do not include generated `dist/` archives in commits.
-
