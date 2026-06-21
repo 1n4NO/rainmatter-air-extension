@@ -15,6 +15,11 @@ const required = [
   'options.js',
   'lib/air-quality.js',
   'test/air-quality.test.mjs',
+  'PRIVACY.md',
+  'icons/icon-16.png',
+  'icons/icon-32.png',
+  'icons/icon-48.png',
+  'icons/icon-128.png',
 ];
 
 const manifest = JSON.parse(await fs.readFile(path.join(root, 'manifest.json'), 'utf8'));
@@ -42,6 +47,12 @@ if (!manifest.action?.default_popup) {
 
 if (manifest.host_permissions?.includes('<all_urls>')) {
   throw new Error('host_permissions must not grant <all_urls> access');
+}
+
+for (const size of [16, 32, 48, 128]) {
+  if (manifest.icons?.[size] !== `icons/icon-${size}.png`) {
+    throw new Error(`manifest icon ${size} is missing or incorrect`);
+  }
 }
 
 if (missing.length) {
