@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  DEFAULT_SETTINGS,
   buildRequestUrls,
   classifyAqi,
   deriveAqiFromMeasurements,
@@ -17,6 +18,10 @@ const settings = {
   location: 'Delhi',
   locationId: '8118',
 };
+
+test('does not include credentials in synchronized default settings', () => {
+  assert.equal(Object.hasOwn(DEFAULT_SETTINGS, 'apiKey'), false);
+});
 
 test('builds OpenAQ v3 location requests', () => {
   assert.deepEqual(buildRequestUrls(settings), {

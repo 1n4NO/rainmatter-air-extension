@@ -4,7 +4,8 @@ Rainmatter Air does not operate a server and does not collect analytics.
 
 ## Data stored by the extension
 
-- API URL, API key, location, refresh interval, and overlay preference are stored in Chrome synchronized extension storage.
+- API URL, location, refresh interval, and overlay preference are stored in Chrome synchronized extension storage.
+- The API key is stored only in local extension storage and is not synchronized through Chrome.
 - The most recent air-quality snapshot is stored locally in the browser.
 
 The API key is sent only to the configured air-quality API as an `X-API-Key` request header. Users should supply their own key and can remove stored extension data by uninstalling the extension.

@@ -21,7 +21,7 @@ A Chrome extension that keeps air-quality data visible in the browser.
 
 The extension defaults to OpenAQ API v3. OpenAQ requires an API key and a numeric
 location ID; both can be entered on the extension's Settings page. The key is stored
-in Chrome synchronized extension storage and is sent as the `X-API-Key` header only
+in local extension storage (not Chrome sync) and is sent as the `X-API-Key` header only
 to the configured API endpoint.
 
 When an API does not report an AQI directly, the extension displays an indicative

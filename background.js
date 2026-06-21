@@ -16,7 +16,7 @@ chrome.alarms.onAlarm.addListener(alarm => {
   if (alarm.name === ALARM_NAME) refreshSnapshot();
 });
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || typeof message !== 'object') return;
 
   if (message.type === 'air-quality:get-snapshot') {
@@ -34,7 +34,20 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === 'air-quality:get-options-settings') {
+    if (!isExtensionPage(sender)) {
+      sendResponse({ error: 'Credential access is restricted to extension pages.' });
+      return;
+    }
+    getSettingsWithCredentials().then(sendResponse);
+    return true;
+  }
+
   if (message.type === 'air-quality:save-settings') {
+    if (!isExtensionPage(sender)) {
+      sendResponse({ ok: false, error: 'Settings can only be changed from an extension page.' });
+      return;
+    }
     saveSettings(message.settings)
       .then(sendResponse)
       .catch(error => sendResponse({ ok: false, error: String(error?.message || error) }));
@@ -43,8 +56,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 async function initialize({ resetSnapshot = false } = {}) {
-  const stored = await chrome.storage.sync.get(DEFAULT_SETTINGS);
-  const settings = { ...DEFAULT_SETTINGS, ...stored };
+  const stored = await chrome.storage.sync.get({ ...DEFAULT_SETTINGS, apiKey: '' });
+  const { apiKey: synchronizedApiKey, ...settings } = stored;
+  const local = await chrome.storage.local.get({ apiKey: '' });
+  if (!local.apiKey && synchronizedApiKey) await chrome.storage.local.set({ apiKey: synchronizedApiKey });
+  await chrome.storage.sync.remove('apiKey');
   await chrome.storage.sync.set(settings);
   if (resetSnapshot) await chrome.storage.local.set({ snapshot: DEFAULT_SNAPSHOT });
   await scheduleRefresh(settings.refreshMinutes);
@@ -52,11 +68,23 @@ async function initialize({ resetSnapshot = false } = {}) {
 }
 
 async function saveSettings(input = {}) {
-  const settings = validateSettings({ ...DEFAULT_SETTINGS, ...input });
-  await chrome.storage.sync.set(settings);
+  const validated = validateSettings({ ...DEFAULT_SETTINGS, ...input });
+  const { apiKey, ...settings } = validated;
+  await Promise.all([
+    chrome.storage.sync.set(settings),
+    chrome.storage.local.set({ apiKey }),
+  ]);
   await scheduleRefresh(settings.refreshMinutes);
   const snapshot = await refreshSnapshot();
-  return { ok: true, connectionOk: snapshot.status === 'ok', settings, snapshot };
+  return { ok: true, connectionOk: snapshot.status === 'ok', settings: validated, snapshot };
+}
+
+async function getSettingsWithCredentials() {
+  const [settings, credentials] = await Promise.all([
+    chrome.storage.sync.get(DEFAULT_SETTINGS),
+    chrome.storage.local.get({ apiKey: '' }),
+  ]);
+  return { ...settings, apiKey: credentials.apiKey };
 }
 
 function validateSettings(settings) {
@@ -84,12 +112,13 @@ async function scheduleRefresh(refreshMinutes) {
 async function refreshSnapshot() {
   const [settings, stored] = await Promise.all([
     chrome.storage.sync.get(DEFAULT_SETTINGS),
-    chrome.storage.local.get({ snapshot: DEFAULT_SNAPSHOT }),
+    chrome.storage.local.get({ snapshot: DEFAULT_SNAPSHOT, apiKey: '' }),
   ]);
+  const requestSettings = { ...settings, apiKey: stored.apiKey };
 
   let snapshot;
   try {
-    snapshot = await fetchAirQualitySnapshot(settings);
+    snapshot = await fetchAirQualitySnapshot(requestSettings);
   } catch (error) {
     snapshot = failureSnapshot(stored.snapshot, settings, error);
   }
@@ -97,6 +126,10 @@ async function refreshSnapshot() {
   await chrome.storage.local.set({ snapshot });
   await updateBadge(snapshot);
   return snapshot;
+}
+
+function isExtensionPage(sender) {
+  return sender?.id === chrome.runtime.id && sender?.url?.startsWith(chrome.runtime.getURL(''));
 }
 
 async function fetchAirQualitySnapshot(settings) {

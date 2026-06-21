@@ -21,7 +21,8 @@ document.getElementById('refresh').addEventListener('click', async () => {
 document.getElementById('toggleApiKey').addEventListener('click', toggleApiKey);
 
 async function load() {
-  const settings = await chrome.runtime.sendMessage({ type: 'air-quality:get-settings' });
+  const settings = await chrome.runtime.sendMessage({ type: 'air-quality:get-options-settings' });
+  if (settings?.error) throw new Error(settings.error);
   apply({ ...defaults, ...settings });
 }
 

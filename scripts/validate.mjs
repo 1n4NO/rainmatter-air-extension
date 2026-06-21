@@ -23,6 +23,7 @@ const required = [
 ];
 
 const manifest = JSON.parse(await fs.readFile(path.join(root, 'manifest.json'), 'utf8'));
+const defaultsSource = await fs.readFile(path.join(root, 'lib/air-quality.js'), 'utf8');
 const missing = [];
 
 for (const file of required) {
@@ -47,6 +48,11 @@ if (!manifest.action?.default_popup) {
 
 if (manifest.host_permissions?.includes('<all_urls>')) {
   throw new Error('host_permissions must not grant <all_urls> access');
+}
+
+const defaultsBlock = defaultsSource.match(/DEFAULT_SETTINGS\s*=\s*\{([\s\S]*?)\n\};/)?.[1] || '';
+if (/\bapiKey\s*:/.test(defaultsBlock)) {
+  throw new Error('API credentials must not be part of synchronized default settings');
 }
 
 for (const size of [16, 32, 48, 128]) {
