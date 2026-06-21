@@ -11,8 +11,7 @@ const chrome = spawn(chromePath, [
   '--disable-gpu',
   '--no-first-run',
   '--no-default-browser-check',
-  `--disable-extensions-except=${root}`,
-  `--load-extension=${root}`,
+  '--enable-unsafe-extension-debugging',
   '--remote-debugging-port=0',
   `--user-data-dir=${profile}`,
   'about:blank',
@@ -23,11 +22,31 @@ chrome.stderr.on('data', chunk => { chromeErrors += chunk; });
 
 try {
   const port = await readDebuggingPort(profile);
-  const worker = await waitForTarget(port, target => target.type === 'service_worker' && target.url.endsWith('/background.js'));
-  const extensionId = new URL(worker.url).hostname;
+  const version = await fetch(`http://127.0.0.1:${port}/json/version`, {
+    signal: AbortSignal.timeout(2000),
+  }).then(response => response.json());
+  const browserClient = await connect(version.webSocketDebuggerUrl);
+  const { id: extensionId } = await browserClient.send('Extensions.loadUnpacked', { path: root });
+  browserClient.close();
+  const worker = await waitForTarget(port, target => (
+    target.type === 'service_worker' && target.url.startsWith(`chrome-extension://${extensionId}/`)
+  ));
   const workerClient = await connect(worker.webSocketDebuggerUrl);
+  const runtime = await evaluate(workerClient, `({
+    id: chrome.runtime?.id,
+    name: chrome.runtime?.getManifest()?.name,
+    optionsUrl: chrome.runtime?.getURL('options.html'),
+    hasStorage: Boolean(chrome.storage)
+  })`);
+  workerClient.close();
+  assert(runtime.name === 'Rainmatter Air', `Unexpected extension worker: ${runtime.name || 'unknown'}`);
+  assert(runtime.hasStorage, 'Storage API was unavailable in the extension worker.');
+  const optionsUrl = runtime.optionsUrl;
+  const options = await createTarget(port, optionsUrl);
+  const optionsClient = await connect(options.webSocketDebuggerUrl);
+  await waitForExpression(optionsClient, `location.protocol === 'chrome-extension:' && document.readyState === 'complete'`);
 
-  await evaluate(workerClient, `(async () => {
+  await evaluate(optionsClient, `(async () => {
     for (let attempt = 0; attempt < 100; attempt++) {
       const { snapshot } = await chrome.storage.local.get(['snapshot']);
       if (snapshot?.status && snapshot.status !== 'loading') return;
@@ -36,7 +55,7 @@ try {
     throw new Error('Extension initialization did not finish.');
   })()`, true);
 
-  await evaluate(workerClient, `Promise.all([
+  await evaluate(optionsClient, `Promise.all([
     chrome.storage.sync.set({
       apiBaseUrl: 'https://api.openaq.org/v3', country: 'IN', location: 'Smoke Test City',
       locationId: '8118', overlayEnabled: true, refreshMinutes: 30
@@ -53,7 +72,7 @@ try {
     })
   ])`, true);
 
-  const storage = await evaluate(workerClient, `(async () => ({
+  const storage = await evaluate(optionsClient, `(async () => ({
     synced: await chrome.storage.sync.get(null),
     local: await chrome.storage.local.get(['apiKey'])
   }))()`, true);
@@ -74,8 +93,7 @@ try {
   assert(popupState.label === 'Indicative AQI', 'Popup did not identify an indicative AQI');
   assert(popupState.source === 'Test fixture', 'Popup source was incorrect');
 
-  const options = await createTarget(port, `chrome-extension://${extensionId}/options.html`);
-  const optionsClient = await connect(options.webSocketDebuggerUrl);
+  await optionsClient.send('Page.reload');
   await waitForExpression(optionsClient, `document.querySelector('#apiKey')?.value === 'browser-test-key'`);
   const optionsState = await evaluate(optionsClient, `({
     apiKeyType: document.querySelector('#apiKey').type,
@@ -86,7 +104,6 @@ try {
   assert(optionsState.location === 'Smoke Test City', 'Options location did not load');
   assert(optionsState.locationId === '8118', 'Options location ID did not load');
 
-  workerClient.close();
   popupClient.close();
   optionsClient.close();
   console.log('Chrome smoke test passed: service worker storage, popup, and options page.');
@@ -129,7 +146,9 @@ async function readDebuggingPort(directory) {
 
 async function waitForTarget(port, predicate) {
   for (let attempt = 0; attempt < 100; attempt++) {
-    const targets = await fetch(`http://127.0.0.1:${port}/json/list`).then(response => response.json());
+    const targets = await fetch(`http://127.0.0.1:${port}/json/list`, {
+      signal: AbortSignal.timeout(2000),
+    }).then(response => response.json());
     const target = targets.find(predicate);
     if (target) return target;
     await delay(100);
@@ -138,9 +157,13 @@ async function waitForTarget(port, predicate) {
 }
 
 async function createTarget(port, url) {
-  const response = await fetch(`http://127.0.0.1:${port}/json/new?${encodeURIComponent(url)}`, { method: 'PUT' });
-  if (!response.ok) throw new Error(`Unable to open extension page: HTTP ${response.status}`);
-  return response.json();
+  const version = await fetch(`http://127.0.0.1:${port}/json/version`, {
+    signal: AbortSignal.timeout(2000),
+  }).then(response => response.json());
+  const browserClient = await connect(version.webSocketDebuggerUrl);
+  const { targetId } = await browserClient.send('Target.createTarget', { url });
+  browserClient.close();
+  return waitForTarget(port, target => target.id === targetId);
 }
 
 async function connect(url) {
@@ -156,6 +179,7 @@ async function connect(url) {
     const callback = pending.get(message.id);
     if (!callback) return;
     pending.delete(message.id);
+    clearTimeout(callback.timer);
     if (message.error) callback.reject(new Error(message.error.message));
     else callback.resolve(message.result);
   });
@@ -164,7 +188,13 @@ async function connect(url) {
     send(method, params = {}) {
       const messageId = ++id;
       socket.send(JSON.stringify({ id: messageId, method, params }));
-      return new Promise((resolve, reject) => pending.set(messageId, { resolve, reject }));
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          pending.delete(messageId);
+          reject(new Error(`Timed out waiting for Chrome DevTools method ${method}.`));
+        }, 10000);
+        pending.set(messageId, { resolve, reject, timer });
+      });
     },
   };
 }
