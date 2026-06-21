@@ -31,9 +31,14 @@ official CPCB AQI.
 
 ## Check
 
+Use Node.js 24 or newer, then run:
+
 ```bash
 npm run check
 ```
+
+GitHub Actions runs the same validation for pushes and pull requests and publishes
+the packaged extension as a short-lived workflow artifact.
 
 To verify the configured OpenAQ location against the live API, copy `.env.example`
 to `.env`, add your key, and run:
@@ -62,3 +67,7 @@ and development scripts are excluded.
 - HTTP/HTTPS content-script access displays the optional overlay; page content is not read or transmitted.
 
 See [PRIVACY.md](PRIVACY.md) for the complete data-handling summary.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development and pull-request guidance.

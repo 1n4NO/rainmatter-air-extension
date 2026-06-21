@@ -20,6 +20,10 @@ const required = [
   'icons/icon-32.png',
   'icons/icon-48.png',
   'icons/icon-128.png',
+  '.github/workflows/ci.yml',
+  '.github/pull_request_template.md',
+  'CONTRIBUTING.md',
+  '.nvmrc',
 ];
 
 const manifest = JSON.parse(await fs.readFile(path.join(root, 'manifest.json'), 'utf8'));

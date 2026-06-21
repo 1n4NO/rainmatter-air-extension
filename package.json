@@ -4,6 +4,9 @@
   "type": "module",
   "version": "0.1.0",
   "description": "Chrome extension for the Rainmatter open-source air quality platform.",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "check": "node scripts/validate.mjs && node --test test/*.test.mjs",
     "test": "node --test test/*.test.mjs",
