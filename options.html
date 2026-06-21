@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rainmatter Air Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <p class="eyebrow">Rainmatter Air</p>
+        <h1>Settings</h1>
+        <p>Configure the data source, location, and overlay behavior.</p>
+      </header>
+
+      <section class="card">
+        <label>
+          API base URL
+          <input id="apiBaseUrl" type="url" placeholder="https://api.openaq.org/v3" />
+        </label>
+        <label>
+          API key
+          <span class="field-with-action">
+            <input id="apiKey" type="password" autocomplete="off" placeholder="Enter your OpenAQ API key" />
+            <button id="toggleApiKey" type="button" class="field-action" aria-label="Show API key">Show</button>
+          </span>
+          <small>Stored in Chrome synchronized extension storage and sent only to the configured API.</small>
+        </label>
+        <label>
+          Country code
+          <input id="country" placeholder="IN" />
+        </label>
+        <label>
+          Display location
+          <input id="location" placeholder="Delhi" />
+        </label>
+        <label>
+          OpenAQ location ID
+          <input id="locationId" inputmode="numeric" pattern="[0-9]*" placeholder="8118" />
+          <small>OpenAQ v3 identifies monitoring locations by numeric ID.</small>
+        </label>
+        <label class="toggle">
+          <input id="overlayEnabled" type="checkbox" />
+          <span>Show the compact overlay on webpages</span>
+        </label>
+        <label>
+          Refresh interval (minutes)
+          <input id="refreshMinutes" type="number" min="15" step="5" />
+        </label>
+        <div class="actions">
+          <button id="save" class="primary">Save</button>
+          <button id="refresh" class="secondary">Refresh snapshot</button>
+        </div>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card">
+        <h2>What this project does</h2>
+        <p>
+          This extension keeps air-quality data visible in the browser through a popup,
+          a badge, and a compact overlay. The data source is configurable so it can
+          connect to Rainmatter's public platform or a compatible API.
+        </p>
+      </section>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>
