@@ -5,6 +5,7 @@ import {
   classifyAqi,
   normalizeSnapshot,
   requestHeaders,
+  validateSettings,
 } from './lib/air-quality.js';
 
 const ALARM_NAME = 'refresh-air-quality';
@@ -85,22 +86,6 @@ async function getSettingsWithCredentials() {
     chrome.storage.local.get({ apiKey: '' }),
   ]);
   return { ...settings, apiKey: credentials.apiKey };
-}
-
-function validateSettings(settings) {
-  const refreshMinutes = Number(settings.refreshMinutes);
-  if (!Number.isFinite(refreshMinutes) || refreshMinutes < 15) {
-    throw new Error('Refresh interval must be at least 15 minutes.');
-  }
-  return {
-    apiBaseUrl: String(settings.apiBaseUrl || '').trim(),
-    apiKey: String(settings.apiKey || '').trim(),
-    country: String(settings.country || 'IN').trim().toUpperCase(),
-    location: String(settings.location || '').trim(),
-    locationId: String(settings.locationId || '').trim(),
-    overlayEnabled: Boolean(settings.overlayEnabled),
-    refreshMinutes,
-  };
 }
 
 async function scheduleRefresh(refreshMinutes) {

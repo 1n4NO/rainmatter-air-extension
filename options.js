@@ -1,3 +1,5 @@
+import { validateSettings } from './lib/air-quality.js';
+
 const defaults = {
   apiBaseUrl: 'https://api.openaq.org/v3',
   apiKey: '',
@@ -8,7 +10,13 @@ const defaults = {
   refreshMinutes: 30,
 };
 
-await load();
+try {
+  await load();
+} catch (error) {
+  const status = document.getElementById('status');
+  status.textContent = String(error?.message || error);
+  status.dataset.state = 'error';
+}
 
 document.getElementById('save').addEventListener('click', save);
 document.getElementById('refresh').addEventListener('click', async () => {
@@ -28,7 +36,7 @@ async function load() {
 
 async function save() {
   await runWithStatus('Saving and testing settings…', async () => {
-    const settings = read();
+    const settings = validateSettings(read());
     await ensureApiPermission(settings.apiBaseUrl);
     const response = await chrome.runtime.sendMessage({ type: 'air-quality:save-settings', settings });
     if (!response?.ok) throw new Error(response?.error || 'Unable to save settings.');
@@ -56,7 +64,7 @@ function read() {
     location: document.getElementById('location').value.trim(),
     locationId: document.getElementById('locationId').value.trim(),
     overlayEnabled: document.getElementById('overlayEnabled').checked,
-    refreshMinutes: Number(document.getElementById('refreshMinutes').value) || defaults.refreshMinutes,
+    refreshMinutes: Number(document.getElementById('refreshMinutes').value),
   };
 }
 

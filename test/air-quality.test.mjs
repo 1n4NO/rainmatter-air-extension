@@ -9,6 +9,7 @@ import {
   normalizeSnapshot,
   pollutantSubIndex,
   requestHeaders,
+  validateSettings,
 } from '../lib/air-quality.js';
 
 const settings = {
@@ -17,10 +18,40 @@ const settings = {
   country: 'IN',
   location: 'Delhi',
   locationId: '8118',
+  overlayEnabled: true,
+  refreshMinutes: 30,
 };
 
 test('does not include credentials in synchronized default settings', () => {
   assert.equal(Object.hasOwn(DEFAULT_SETTINGS, 'apiKey'), false);
+});
+
+test('sanitizes valid settings', () => {
+  assert.deepEqual(validateSettings({
+    ...settings,
+    apiBaseUrl: 'https://api.openaq.org/v3/',
+    country: ' in ',
+    location: ' Delhi ',
+    locationId: ' 8118 ',
+    refreshMinutes: '30',
+    overlayEnabled: 1,
+  }), {
+    ...settings,
+    apiBaseUrl: 'https://api.openaq.org/v3',
+    country: 'IN',
+    location: 'Delhi',
+    locationId: '8118',
+    refreshMinutes: 30,
+    overlayEnabled: true,
+  });
+});
+
+test('rejects invalid settings before persistence', () => {
+  assert.throws(() => validateSettings({ ...settings, apiKey: '' }), /API key is required/);
+  assert.throws(() => validateSettings({ ...settings, country: 'IND' }), /exactly two letters/);
+  assert.throws(() => validateSettings({ ...settings, locationId: 'Delhi' }), /must be numeric/);
+  assert.throws(() => validateSettings({ ...settings, refreshMinutes: 5 }), /15 to 1440/);
+  assert.throws(() => validateSettings({ ...settings, refreshMinutes: 30.5 }), /whole number/);
 });
 
 test('builds OpenAQ v3 location requests', () => {

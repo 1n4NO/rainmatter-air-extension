@@ -17,7 +17,7 @@
       <section class="card">
         <label>
           API base URL
-          <input id="apiBaseUrl" type="url" placeholder="https://api.openaq.org/v3" />
+          <input id="apiBaseUrl" type="url" placeholder="https://api.openaq.org/v3" required />
         </label>
         <label>
           API key
@@ -25,19 +25,19 @@
             <input id="apiKey" type="password" autocomplete="off" placeholder="Enter your OpenAQ API key" />
             <button id="toggleApiKey" type="button" class="field-action" aria-label="Show API key">Show</button>
           </span>
-          <small>Stored in Chrome synchronized extension storage and sent only to the configured API.</small>
+          <small>Stored only on this device and sent only to the configured API.</small>
         </label>
         <label>
           Country code
-          <input id="country" placeholder="IN" />
+          <input id="country" minlength="2" maxlength="2" pattern="[A-Za-z]{2}" placeholder="IN" required />
         </label>
         <label>
           Display location
-          <input id="location" placeholder="Delhi" />
+          <input id="location" placeholder="Delhi" required />
         </label>
         <label>
           OpenAQ location ID
-          <input id="locationId" inputmode="numeric" pattern="[0-9]*" placeholder="8118" />
+          <input id="locationId" inputmode="numeric" pattern="[0-9]+" placeholder="8118" />
           <small>OpenAQ v3 identifies monitoring locations by numeric ID.</small>
         </label>
         <label class="toggle">
@@ -46,7 +46,7 @@
         </label>
         <label>
           Refresh interval (minutes)
-          <input id="refreshMinutes" type="number" min="15" step="5" />
+          <input id="refreshMinutes" type="number" min="15" max="1440" step="1" required />
         </label>
         <div class="actions">
           <button id="save" class="primary">Save</button>
