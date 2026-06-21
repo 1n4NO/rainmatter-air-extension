@@ -40,16 +40,28 @@ npm run check
 GitHub Actions runs the same validation for pushes and pull requests and publishes
 the packaged extension as a short-lived workflow artifact.
 
-Run a real-browser smoke test when Chrome for Testing or Chromium is installed:
+Run the end-to-end smoke test with a current Chrome for Testing or Chromium build:
 
 ```bash
 npm run test:browser
 ```
 
-Set `CHROME_PATH` when the browser executable is not in a standard location. Branded
-Google Chrome 137 and newer does not support automated unpacked-extension loading, so
-use Chrome for Testing or Chromium. The test loads the unpacked extension headlessly
-and verifies service-worker storage, popup rendering, and Settings credential loading.
+Set `CHROME_PATH` to the browser executable when it is not installed in a standard
+location:
+
+```bash
+CHROME_PATH="/path/to/chrome" npm run test:browser
+```
+
+Branded Google Chrome 137 and newer no longer supports the command-line flags used to
+load unpacked extensions automatically. The smoke test therefore uses Chrome's DevTools
+extension API to load this repository into Chrome for Testing or Chromium. It verifies
+that the Manifest V3 service worker starts, credentials remain in local rather than
+synchronized storage, the popup renders a cached snapshot, and Settings loads the saved
+configuration with the API key masked.
+
+Continuous integration installs Chrome for Testing and runs this smoke test before
+building the extension package.
 
 To verify the configured OpenAQ location against the live API, copy `.env.example`
 to `.env`, add your key, and run:
