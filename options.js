@@ -30,8 +30,11 @@ async function save() {
     const settings = read();
     await ensureApiPermission(settings.apiBaseUrl);
     const response = await chrome.runtime.sendMessage({ type: 'air-quality:save-settings', settings });
-    if (!response?.ok) throw new Error(response?.error || response?.snapshot?.message || 'Unable to save settings.');
-    return 'Settings saved and connection verified.';
+    if (!response?.ok) throw new Error(response?.error || 'Unable to save settings.');
+    if (!response.connectionOk) {
+      return { message: `Settings saved. ${response.snapshot?.message || 'Connection check failed.'}`, state: 'warning' };
+    }
+    return { message: 'Settings saved and connection verified.', state: 'success' };
   });
 }
 
@@ -77,13 +80,18 @@ function toggleApiKey() {
 
 async function runWithStatus(pendingMessage, action) {
   const status = document.getElementById('status');
+  const buttons = [...document.querySelectorAll('.actions button')];
+  buttons.forEach(button => { button.disabled = true; });
   status.textContent = pendingMessage;
   status.dataset.state = 'pending';
   try {
-    status.textContent = await action();
-    status.dataset.state = 'success';
+    const result = await action();
+    status.textContent = typeof result === 'string' ? result : result.message;
+    status.dataset.state = typeof result === 'string' ? 'success' : result.state;
   } catch (error) {
     status.textContent = String(error?.message || error);
     status.dataset.state = 'error';
+  } finally {
+    buttons.forEach(button => { button.disabled = false; });
   }
 }

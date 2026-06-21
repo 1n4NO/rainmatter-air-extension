@@ -56,7 +56,7 @@ async function saveSettings(input = {}) {
   await chrome.storage.sync.set(settings);
   await scheduleRefresh(settings.refreshMinutes);
   const snapshot = await refreshSnapshot();
-  return { ok: snapshot.status === 'ok', settings, snapshot };
+  return { ok: true, connectionOk: snapshot.status === 'ok', settings, snapshot };
 }
 
 function validateSettings(settings) {

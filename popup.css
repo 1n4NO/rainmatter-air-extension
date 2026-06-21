@@ -92,6 +92,29 @@ h1 { margin: 0; font-size: 24px; letter-spacing: -0.03em; }
   color: var(--tx2);
 }
 
+.snapshot-state {
+  display: inline-block;
+  min-height: 1.4em;
+  margin-top: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--tx2);
+  font-size: 11px;
+}
+
+.snapshot-state[data-state="ok"] { color: var(--green); background: rgba(74, 222, 128, 0.1); }
+.snapshot-state[data-state="stale"] { color: var(--amber); background: rgba(251, 191, 36, 0.1); }
+.snapshot-state[data-state="error"] { color: var(--red); background: rgba(248, 113, 113, 0.1); }
+
+.scorecard[data-category="good"] .score { color: var(--green); }
+.scorecard[data-category="satisfactory"] .score { color: #a3e635; }
+.scorecard[data-category="moderately-polluted"] .score { color: var(--amber); }
+.scorecard[data-category="poor"] .score { color: #fb923c; }
+.scorecard[data-category="very-poor"] .score,
+.scorecard[data-category="severe"] .score { color: var(--red); }
+
+button:disabled { cursor: wait; opacity: 0.65; }
+
 .meta {
   padding: 14px;
   display: grid;

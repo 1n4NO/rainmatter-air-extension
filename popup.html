@@ -14,19 +14,20 @@
           <h1>Rainmatter Air</h1>
           <p class="sub">Pollution data at a glance, for every Indian citizen.</p>
         </div>
-        <button id="refresh" class="ghost">Refresh</button>
+        <button id="refresh" class="ghost" type="button">Refresh</button>
       </header>
 
       <section class="scorecard">
-        <div class="score-label">Current AQI</div>
+        <div class="score-label" id="score-label">Current AQI</div>
         <div class="score" id="aqi">—</div>
         <div class="category" id="category">Loading…</div>
         <div class="message" id="message"></div>
+        <div class="snapshot-state" id="snapshot-state" role="status" aria-live="polite">Loading cached reading…</div>
       </section>
 
       <section class="meta">
         <div><span>Location</span><strong id="location">—</strong></div>
-        <div><span>Updated</span><strong id="updated">—</strong></div>
+        <div><span>Updated</span><strong id="updated" title="">—</strong></div>
         <div><span>Source</span><strong id="source">—</strong></div>
       </section>
 

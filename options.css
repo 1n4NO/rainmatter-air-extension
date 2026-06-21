@@ -88,7 +88,9 @@ small {
 
 .status { min-height: 1.5em; }
 .status[data-state="success"] { color: var(--good); }
+.status[data-state="warning"] { color: #fbbf24; }
 .status[data-state="error"] { color: #f87171; }
+button:disabled { cursor: wait; opacity: 0.65; }
 
 .toggle {
   grid-template-columns: 22px 1fr;
