@@ -22,10 +22,19 @@
         <label>
           API key
           <span class="field-with-action">
-            <input id="apiKey" type="password" autocomplete="off" placeholder="Enter your OpenAQ API key" />
+            <input id="apiKey" type="password" autocomplete="off" placeholder="Enter your API key" />
             <button id="toggleApiKey" type="button" class="field-action" aria-label="Show API key">Show</button>
           </span>
           <small>Stored only on this device and sent only to the configured API.</small>
+        </label>
+        <label>
+          Data provider
+          <select id="provider">
+            <option value="cpcb">CPCB</option>
+            <option value="airnet">Airnet</option>
+            <option value="aurassure">Aurassure</option>
+          </select>
+          <small>Used when connecting to oaq.notf.in.</small>
         </label>
         <label>
           Country code
@@ -36,9 +45,9 @@
           <input id="location" placeholder="Delhi" required />
         </label>
         <label>
-          OpenAQ location ID
-          <input id="locationId" inputmode="numeric" pattern="[0-9]+" placeholder="8118" />
-          <small>OpenAQ v3 identifies monitoring locations by numeric ID.</small>
+          Station / location ID
+          <input id="locationId" placeholder="8118" />
+          <small>OpenAQ v3 uses a numeric ID. OAQ uses the station ID from the provider hierarchy.</small>
         </label>
         <label class="toggle">
           <input id="overlayEnabled" type="checkbox" />

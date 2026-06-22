@@ -12,7 +12,7 @@
   },
   "permissions": ["storage", "alarms"],
   "host_permissions": ["https://api.openaq.org/*"],
-  "optional_host_permissions": ["https://*/*", "http://localhost/*"],
+  "optional_host_permissions": ["https://*/*", "http://localhost/*", "https://us-central1-oaqdms.cloudfunctions.net/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"

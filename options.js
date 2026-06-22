@@ -6,6 +6,7 @@ const defaults = {
   country: 'IN',
   location: 'Delhi',
   locationId: '8118',
+  provider: 'cpcb',
   overlayEnabled: true,
   refreshMinutes: 30,
 };
@@ -63,6 +64,7 @@ function read() {
     country: document.getElementById('country').value.trim().toUpperCase() || 'IN',
     location: document.getElementById('location').value.trim(),
     locationId: document.getElementById('locationId').value.trim(),
+    provider: document.getElementById('provider').value,
     overlayEnabled: document.getElementById('overlayEnabled').checked,
     refreshMinutes: Number(document.getElementById('refreshMinutes').value),
   };
@@ -74,6 +76,7 @@ function apply(settings) {
   document.getElementById('country').value = settings.country;
   document.getElementById('location').value = settings.location;
   document.getElementById('locationId').value = settings.locationId;
+  document.getElementById('provider').value = settings.provider || 'cpcb';
   document.getElementById('overlayEnabled').checked = Boolean(settings.overlayEnabled);
   document.getElementById('refreshMinutes').value = settings.refreshMinutes;
 }

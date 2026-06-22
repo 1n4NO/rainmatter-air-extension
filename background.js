@@ -2,11 +2,16 @@ import {
   DEFAULT_SETTINGS,
   DEFAULT_SNAPSHOT,
   buildRequestUrls,
+  buildOaqRequestUrl,
   classifyAqi,
+  isOaqSource,
+  normalizeOaqSnapshot,
   normalizeSnapshot,
   requestHeaders,
   validateSettings,
 } from './lib/air-quality.js';
+
+const OAQ_BROKER_URL = 'https://us-central1-oaqdms.cloudfunctions.net/brokerData';
 
 const ALARM_NAME = 'refresh-air-quality';
 
@@ -75,6 +80,8 @@ async function saveSettings(input = {}) {
     chrome.storage.sync.set(settings),
     chrome.storage.local.set({ apiKey }),
   ]);
+  // Invalidate cached OAQ session whenever settings change (API key may have changed)
+  await chrome.storage.local.remove('oaqSession');
   await scheduleRefresh(settings.refreshMinutes);
   const snapshot = await refreshSnapshot();
   return { ok: true, connectionOk: snapshot.status === 'ok', settings: validated, snapshot };
@@ -118,6 +125,14 @@ function isExtensionPage(sender) {
 }
 
 async function fetchAirQualitySnapshot(settings) {
+  if (isOaqSource(settings)) {
+    if (!settings.apiKey) throw new Error('An API key is required for OAQ. Add one in Settings.');
+    const signatureParams = await getOaqSession(settings.apiKey);
+    const url = buildOaqRequestUrl(settings, signatureParams);
+    const payload = await fetchJson(url, { accept: 'application/json' });
+    return normalizeOaqSnapshot(payload, settings);
+  }
+
   const urls = buildRequestUrls(settings);
   const headers = requestHeaders(settings);
 
@@ -134,6 +149,42 @@ async function fetchAirQualitySnapshot(settings) {
   }
 
   return normalizeSnapshot(await fetchJson(urls.latestUrl, headers), settings);
+}
+
+async function getOaqSession(apiKey) {
+  const { oaqSession } = await chrome.storage.local.get({ oaqSession: null });
+
+  // Reuse cached session if it has more than 5 minutes left
+  if (oaqSession?.signatureParams && Number(oaqSession.expiresAt) > Date.now() + 5 * 60 * 1000) {
+    return oaqSession.signatureParams;
+  }
+
+  const brokerUrl = `${OAQ_BROKER_URL}?action=api_session&token=${encodeURIComponent(apiKey)}`;
+  const response = await fetch(brokerUrl);
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('OAQ API key is invalid or unauthorized (HTTP ' + response.status + ').');
+    }
+    throw new Error(`OAQ broker returned HTTP ${response.status}.`);
+  }
+
+  const session = await response.json();
+
+  // Broker returns { Signature, Expires, KeyName } (Google Cloud CDN signed URL params)
+  const signatureParams = {
+    Signature: session.Signature ?? session.signature,
+    Expires:   session.Expires   ?? session.expires,
+    KeyName:   session.KeyName   ?? session.keyName ?? session.key_name,
+  };
+
+  if (!signatureParams.Signature || !signatureParams.Expires || !signatureParams.KeyName) {
+    throw new Error('OAQ broker returned an unexpected session format: ' + JSON.stringify(session));
+  }
+
+  // Expires is a Unix timestamp (seconds); convert to ms for Date.now() comparison
+  const expiresAt = Number(signatureParams.Expires) * 1000;
+  await chrome.storage.local.set({ oaqSession: { signatureParams, expiresAt } });
+  return signatureParams;
 }
 
 async function fetchJson(url, headers) {

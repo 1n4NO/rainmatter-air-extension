@@ -17,6 +17,16 @@ A Chrome extension that keeps air-quality data visible in the browser.
 - Background service worker that fetches and caches the latest snapshot
 - Content script overlay for quick at-a-glance visibility on any webpage
 
+## Connecting to OAQ (oaq.notf.in)
+
+To use Rainmatter's own OAQ platform, set the following in the extension's Settings page:
+
+- **API base URL**: `https://oaq.notf.in/v1`
+- **API key**: your OAQ API key (get one at [oaq.notf.in](https://oaq.notf.in))
+- **Data provider**: the provider whose network you want (e.g. `Aurassure`, `CPCB`, `Airnet`)
+- **Display location**: the city name as it appears in the provider hierarchy (e.g. `Bhubaneswar`)
+- **Station / location ID**: the numeric station ID (e.g. `14151`); leave blank to use the city-wide map average instead
+
 ## Data source
 
 The extension defaults to OpenAQ API v3. OpenAQ requires an API key and a numeric
