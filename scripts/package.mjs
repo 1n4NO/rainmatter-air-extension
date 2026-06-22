@@ -17,7 +17,9 @@ const output = path.join(outputDirectory, `rainmatter-air-${version}.zip`);
 
 try {
   for (const file of files) await fs.cp(path.join(root, file), path.join(staging, file), { recursive: true });
-  await fs.rm(outputDirectory, { recursive: true, force: true });
+  try {
+    await fs.rm(outputDirectory, { recursive: true, force: true });
+  } catch { /* ignore if dist/ can't be removed — we'll overwrite */ }
   await fs.mkdir(outputDirectory, { recursive: true });
   const result = spawnSync('zip', ['-q', '-r', output, '.'], { cwd: staging, stdio: 'inherit' });
   if (result.error) throw result.error;

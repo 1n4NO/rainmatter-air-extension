@@ -8,38 +8,63 @@
   </head>
   <body>
     <main class="app">
+
       <header class="hero">
         <div>
           <p class="eyebrow">Rainmatter Foundation</p>
           <h1>Rainmatter Air</h1>
-          <p class="sub">Pollution data at a glance, for every Indian citizen.</p>
         </div>
-        <button id="refresh" class="ghost" type="button">Refresh</button>
+        <button id="refresh" class="refresh-btn" type="button" aria-label="Refresh">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </button>
       </header>
 
       <section class="scorecard">
-        <div class="score-label" id="score-label">Current AQI</div>
-        <div class="score" id="aqi">—</div>
-        <div class="category" id="category">Loading…</div>
-        <div class="message" id="message"></div>
+        <div class="gauge-wrap">
+          <svg class="gauge" viewBox="0 0 200 200" aria-hidden="true">
+            <circle class="gauge-track" cx="100" cy="100" r="75"/>
+            <circle class="gauge-ring" id="gauge-ring" cx="100" cy="100" r="75"/>
+          </svg>
+          <div class="score-inner">
+            <div class="score-label" id="score-label">Current AQI</div>
+            <div class="score" id="aqi">—</div>
+            <div class="category" id="category">Loading…</div>
+          </div>
+        </div>
+        <p class="message" id="message"></p>
         <div class="snapshot-state" id="snapshot-state" role="status" aria-live="polite">Loading cached reading…</div>
       </section>
 
       <section class="meta">
-        <div><span>Location</span><strong id="location">—</strong></div>
-        <div><span>Updated</span><strong id="updated" title="">—</strong></div>
-        <div><span>Source</span><strong id="source">—</strong></div>
+        <div class="meta-item">
+          <span>Location</span>
+          <strong id="location">—</strong>
+        </div>
+        <div class="meta-item">
+          <span>Updated</span>
+          <strong id="updated" title="">—</strong>
+        </div>
+        <div class="meta-item">
+          <span>Source</span>
+          <strong id="source">—</strong>
+        </div>
       </section>
 
-      <section>
+      <section class="panel measurements-section">
         <h2>Pollutants</h2>
         <div id="measurements" class="measurements"></div>
       </section>
 
       <footer class="footer">
         <a href="options.html" target="_blank" rel="noreferrer">Settings</a>
-        <a href="#" id="open-source-link">Project setup</a>
+        <a href="#" id="open-source-link">About</a>
       </footer>
+
     </main>
     <script type="module" src="popup.js"></script>
   </body>

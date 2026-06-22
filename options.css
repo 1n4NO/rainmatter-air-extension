@@ -25,6 +25,12 @@ body {
   padding: 28px 0 40px;
   display: grid;
   gap: 18px;
+  animation: pageEnter 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .eyebrow {
@@ -55,13 +61,32 @@ label {
   letter-spacing: 0.08em;
 }
 
-input {
+input, select {
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.03);
   border-radius: 12px;
   color: var(--tx);
   padding: 12px 14px;
   font: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+input:focus, select:focus {
+  border-color: rgba(125, 169, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(125, 169, 255, 0.13);
+  background: rgba(255,255,255,0.05);
+}
+
+/* Custom select */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237da9ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px;
+  cursor: pointer;
 }
 
 .field-with-action {
@@ -77,6 +102,15 @@ input {
   background: rgba(125, 169, 255, 0.12);
   color: var(--tx);
   padding: 0 14px;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.field-action:hover {
+  background: rgba(125, 169, 255, 0.2);
+  border-color: rgba(125, 169, 255, 0.3);
 }
 
 small {
@@ -86,10 +120,22 @@ small {
   text-transform: none;
 }
 
-.status { min-height: 1.5em; }
+.status {
+  min-height: 1.5em;
+  font-size: 13px;
+  transition: color 0.3s;
+  animation: statusSlide 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.status:empty { animation: none; }
 .status[data-state="success"] { color: var(--good); }
 .status[data-state="warning"] { color: #fbbf24; }
-.status[data-state="error"] { color: #f87171; }
+.status[data-state="error"]   { color: #f87171; }
+
+@keyframes statusSlide {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 button:disabled { cursor: wait; opacity: 0.65; }
 
 .toggle {
@@ -114,17 +160,30 @@ button {
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s, background 0.2s;
 }
+
+button:active:not(:disabled) { transform: scale(0.96); }
 
 .primary {
   background: linear-gradient(135deg, var(--accent), #5d7fe9);
   color: #08111e;
 }
 
+.primary:hover:not(:disabled) {
+  box-shadow: 0 0 0 3px rgba(125, 169, 255, 0.22), 0 4px 14px rgba(93, 127, 233, 0.35);
+  opacity: 0.92;
+}
+
 .secondary {
   background: rgba(125, 169, 255, 0.12);
   color: var(--tx);
   border: 1px solid var(--border);
+}
+
+.secondary:hover:not(:disabled) {
+  background: rgba(125, 169, 255, 0.2);
+  border-color: rgba(125, 169, 255, 0.3);
 }
 
 p { color: var(--tx2); }

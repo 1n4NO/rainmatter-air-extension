@@ -1,5 +1,7 @@
 # Rainmatter Air Extension
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A Chrome extension that keeps air-quality data visible in the browser.
 
 ## Install locally
@@ -103,4 +105,47 @@ See [PRIVACY.md](PRIVACY.md) for the complete data-handling summary.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development and pull-request guidance.
+Contributions are welcome. Here is how to get started.
+
+**Set up**
+
+```bash
+git clone https://github.com/your-org/rainmatter-air-extension
+cd rainmatter-air-extension
+node --version   # Node.js 24 or newer required
+npm run check    # must pass before you open a PR
+```
+
+Load the extension in Chrome by going to `chrome://extensions`, enabling Developer mode, and choosing Load unpacked on this directory.
+
+**Making changes**
+
+Keep pull requests focused — one logical change per PR. For anything beyond a small bug fix, open an issue first to discuss the approach. The test suite (`npm run check`) must pass on every commit; CI will block the merge otherwise.
+
+Core logic lives in `lib/air-quality.js` and has unit tests in `test/air-quality.test.mjs`. Add a test for every new behaviour or bug fix. The background service worker (`background.js`) handles fetch and caching; UI lives in `popup.*` and `options.*`.
+
+**Code style**
+
+- Vanilla JS (no build step, no bundler).
+- No external runtime dependencies — keep the extension self-contained.
+- Prefer `const`/`let`, `async`/`await`, and ES module syntax.
+- Formatting is not enforced by a linter; just match the surrounding style.
+
+**Commit messages**
+
+Use the imperative mood in the subject line (`Add OAQ broker session caching`, not `Added…`). Keep the subject under 72 characters. Reference issues with `Fixes #123` in the body where relevant.
+
+**Pull request checklist**
+
+- `npm run check` passes locally.
+- New or changed behaviour is covered by a test.
+- The `PRIVACY.md` is updated if the extension gains new network access or storage keys.
+- The `manifest.json` version is bumped if this change should ship as a new release.
+
+**Reporting issues**
+
+Open a GitHub issue with steps to reproduce, the Chrome version, and (if relevant) the API endpoint and error message. Do not include your API key.
+
+## License
+
+[MIT](LICENSE) © Rainmatter Foundation
