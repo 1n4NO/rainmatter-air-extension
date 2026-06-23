@@ -14,6 +14,8 @@ const chrome = spawn(chromePath, [
   '--enable-unsafe-extension-debugging',
   '--remote-debugging-port=0',
   `--user-data-dir=${profile}`,
+  // Required in CI (Docker/GitHub Actions) where Chrome can't use its sandbox
+  ...(process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : []),
   'about:blank',
 ], { stdio: ['ignore', 'ignore', 'pipe'] });
 
