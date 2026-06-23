@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A Chrome extension that keeps air-quality data visible in the browser.
+A Chrome extension that keeps air-quality data visible in the browser. **[→ rainmatter-air-landing.vercel.app](https://rainmatter-air-landing.vercel.app/)**
 
 ## Screenshots
 
@@ -117,7 +117,7 @@ Contributions are welcome. Here is how to get started.
 **Set up**
 
 ```bash
-git clone https://github.com/your-org/rainmatter-air-extension
+git clone https://github.com/1n4NO/rainmatter-air-extension
 cd rainmatter-air-extension
 node --version   # Node.js 24 or newer required
 npm run check    # must pass before you open a PR
