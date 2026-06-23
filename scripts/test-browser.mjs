@@ -11,9 +11,10 @@ const chrome = spawn(chromePath, [
   '--disable-gpu',
   '--no-first-run',
   '--no-default-browser-check',
-  '--enable-unsafe-extension-debugging',
   '--remote-debugging-port=0',
   `--user-data-dir=${profile}`,
+  `--load-extension=${root}`,
+  `--disable-extensions-except=${root}`,
   // Required in CI (Docker/GitHub Actions) where Chrome can't use its sandbox
   ...(process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : []),
   'about:blank',
@@ -24,16 +25,17 @@ chrome.stderr.on('data', chunk => { chromeErrors += chunk; });
 
 try {
   const port = await readDebuggingPort(profile);
-  const version = await fetch(`http://127.0.0.1:${port}/json/version`, {
-    signal: AbortSignal.timeout(2000),
-  }).then(response => response.json());
-  const browserClient = await connect(version.webSocketDebuggerUrl);
-  const { id: extensionId } = await browserClient.send('Extensions.loadUnpacked', { path: root });
-  browserClient.close();
+  // Extension is pre-loaded via --load-extension; find its service worker by URL pattern.
+  // background.js is the declared service_worker in manifest.json.
   const worker = await waitForTarget(port, target => (
-    target.type === 'service_worker' && target.url.startsWith(`chrome-extension://${extensionId}/`)
+    target.type === 'service_worker' &&
+    target.url.startsWith('chrome-extension://') &&
+    target.url.endsWith('/background.js')
   ));
+  const extensionId = new URL(worker.url).hostname;
   const workerClient = await connect(worker.webSocketDebuggerUrl);
+  // Wait for chrome.runtime to be fully initialised inside the service worker.
+  await waitForExpression(workerClient, `Boolean(chrome.runtime?.id)`);
   const runtime = await evaluate(workerClient, `({
     id: chrome.runtime?.id,
     name: chrome.runtime?.getManifest()?.name,
@@ -41,7 +43,7 @@ try {
     hasStorage: Boolean(chrome.storage)
   })`);
   workerClient.close();
-  assert(runtime.name === 'Rainmatter Air', `Unexpected extension worker: ${runtime.name || 'unknown'}`);
+  assert(runtime.name === 'Rainmatter Air', `Unexpected extension worker name: ${runtime.name ?? 'undefined'} (id: ${runtime.id ?? 'undefined'})`);
   assert(runtime.hasStorage, 'Storage API was unavailable in the extension worker.');
   const optionsUrl = runtime.optionsUrl;
   const options = await createTarget(port, optionsUrl);
