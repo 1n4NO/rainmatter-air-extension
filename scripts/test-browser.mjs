@@ -11,10 +11,9 @@ const chrome = spawn(chromePath, [
   '--disable-gpu',
   '--no-first-run',
   '--no-default-browser-check',
+  '--enable-unsafe-extension-debugging',
   '--remote-debugging-port=0',
   `--user-data-dir=${profile}`,
-  `--load-extension=${root}`,
-  `--disable-extensions-except=${root}`,
   // Required in CI (Docker/GitHub Actions) where Chrome can't use its sandbox
   ...(process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : []),
   'about:blank',
@@ -25,14 +24,15 @@ chrome.stderr.on('data', chunk => { chromeErrors += chunk; });
 
 try {
   const port = await readDebuggingPort(profile);
-  // Extension is pre-loaded via --load-extension; find its service worker by URL pattern.
-  // background.js is the declared service_worker in manifest.json.
+  const version = await fetch(`http://127.0.0.1:${port}/json/version`, {
+    signal: AbortSignal.timeout(2000),
+  }).then(response => response.json());
+  const browserClient = await connect(version.webSocketDebuggerUrl);
+  const { id: extensionId } = await browserClient.send('Extensions.loadUnpacked', { path: root });
+  browserClient.close();
   const worker = await waitForTarget(port, target => (
-    target.type === 'service_worker' &&
-    target.url.startsWith('chrome-extension://') &&
-    target.url.endsWith('/background.js')
+    target.type === 'service_worker' && target.url.startsWith(`chrome-extension://${extensionId}/`)
   ));
-  const extensionId = new URL(worker.url).hostname;
   const workerClient = await connect(worker.webSocketDebuggerUrl);
   // Wait for chrome.runtime to be fully initialised inside the service worker.
   await waitForExpression(workerClient, `Boolean(chrome.runtime?.id)`);
@@ -129,6 +129,9 @@ async function findChrome() {
     process.env.CHROME_PATH,
     '/Applications/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing',
     '/Applications/Chromium.app/Contents/MacOS/Chromium',
+    // GitHub Actions Ubuntu pre-installs Chrome here
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/google-chrome',
     '/usr/bin/chromium',
     '/usr/bin/chromium-browser',
   ].filter(Boolean);

@@ -19,30 +19,35 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Validate and test
         run: npm run check
 
       - name: Set up Chrome for Testing
         id: setup-chrome
-        uses: browser-actions/setup-chrome@v2
+        uses: browser-actions/setup-chrome@v1
 
       - name: Run Chrome smoke test
         run: npm run test:browser
         env:
+          CI: true
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
 
       - name: Build extension package
         run: npm run package
 
       - name: Upload extension package
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: rainmatter-air-extension
           path: dist/*.zip
