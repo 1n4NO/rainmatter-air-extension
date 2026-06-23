@@ -150,8 +150,8 @@ test('detects OAQ source from base URL', () => {
   assert.equal(isOaqSource(settings), false);
 });
 
-test('builds OAQ last24h URL with signature params', () => {
-  const sig = { Signature: 'sig123', Expires: '9999999999', KeyName: 'key1' };
+test('builds OAQ last24h URL with signature string', () => {
+  const sig = 'URLPrefix=aHR0cHM6Ly9leGFtcGxl&Expires=9999999999&KeyName=key1&Signature=sig123';
   const url = buildOaqRequestUrl(oaqSettings, sig);
   assert.ok(url.startsWith('https://oaq.notf.in/v1/provider=aurassure/live/sensors/14151/last24h.json'));
   assert.ok(url.includes('Signature=sig123'));
@@ -161,7 +161,7 @@ test('builds OAQ last24h URL with signature params', () => {
 
 test('builds OAQ city map_latest URL when no stationId', () => {
   const citySettings = { ...oaqSettings, locationId: '' };
-  const sig = { Signature: 's', Expires: '1', KeyName: 'k' };
+  const sig = 'URLPrefix=aHR0cHM6Ly9leGFtcGxl&Expires=1&KeyName=k&Signature=s';
   const url = buildOaqRequestUrl(citySettings, sig);
   assert.ok(url.includes('provider=aurassure/live/by_city/bhubaneswar/map_latest.json'));
 });

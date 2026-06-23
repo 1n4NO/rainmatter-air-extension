@@ -16,7 +16,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  width: 360px;
+  width: 340px;
   min-height: 520px;
   background: var(--bg);
   color: var(--tx);
@@ -240,12 +240,19 @@ h1 {
 
 /* ─── Meta strip ─────────────────────────────────────────────────────────── */
 .meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meta-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
 }
 
 .meta-item {
+  min-width: 0;
   padding: 10px 11px;
   border-radius: 14px;
   transition: border-color 0.2s;
@@ -320,10 +327,14 @@ h2 {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--tx2);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .m-value {
   font-size: 14px;
+  flex-shrink: 0;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--tx);

@@ -155,8 +155,8 @@ async function getOaqSession(apiKey) {
   const { oaqSession } = await chrome.storage.local.get({ oaqSession: null });
 
   // Reuse cached session if it has more than 5 minutes left
-  if (oaqSession?.signatureParams && Number(oaqSession.expiresAt) > Date.now() + 5 * 60 * 1000) {
-    return oaqSession.signatureParams;
+  if (oaqSession?.signatureString && Number(oaqSession.expiresAt) > Date.now() + 5 * 60 * 1000) {
+    return oaqSession.signatureString;
   }
 
   const brokerUrl = `${OAQ_BROKER_URL}?action=api_session&token=${encodeURIComponent(apiKey)}`;
@@ -170,21 +170,18 @@ async function getOaqSession(apiKey) {
 
   const session = await response.json();
 
-  // Broker returns { Signature, Expires, KeyName } (Google Cloud CDN signed URL params)
-  const signatureParams = {
-    Signature: session.Signature ?? session.signature,
-    Expires:   session.Expires   ?? session.expires,
-    KeyName:   session.KeyName   ?? session.keyName ?? session.key_name,
-  };
-
-  if (!signatureParams.Signature || !signatureParams.Expires || !signatureParams.KeyName) {
+  // Broker returns { baseUrl, signature: "URLPrefix=...&Expires=...&KeyName=...&Signature=..." }
+  const signatureString = session.signature ?? session.Signature ?? null;
+  if (!signatureString || typeof signatureString !== 'string') {
     throw new Error('OAQ broker returned an unexpected session format: ' + JSON.stringify(session));
   }
 
-  // Expires is a Unix timestamp (seconds); convert to ms for Date.now() comparison
-  const expiresAt = Number(signatureParams.Expires) * 1000;
-  await chrome.storage.local.set({ oaqSession: { signatureParams, expiresAt } });
-  return signatureParams;
+  // Extract Expires from the signature query string for cache expiry tracking
+  const sigParams = Object.fromEntries(new URLSearchParams(signatureString));
+  const expiresAt = Number(sigParams.Expires) * 1000; // Expires is Unix seconds
+
+  await chrome.storage.local.set({ oaqSession: { signatureString, expiresAt } });
+  return signatureString;
 }
 
 async function fetchJson(url, headers) {

@@ -1,11 +1,11 @@
 import { validateSettings } from './lib/air-quality.js';
 
 const defaults = {
-  apiBaseUrl: 'https://api.openaq.org/v3',
+  apiBaseUrl: 'https://oaq.notf.in/v1',
   apiKey: '',
   country: 'IN',
   location: 'Delhi',
-  locationId: '8118',
+  locationId: '',
   provider: 'cpcb',
   overlayEnabled: true,
   refreshMinutes: 30,
