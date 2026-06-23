@@ -6,8 +6,8 @@ A Chrome extension that keeps air-quality data visible in the browser.
 
 ## Screenshots
 
-<img src="screenshots/Screenshot%202026-06-23%20at%203.04.16%20PM.png" alt="Popup showing AQI gauge, location, and pollutant readings" width="320" />
-<img src="screenshots/Screenshot%202026-06-23%20at%203.04.50%20PM.png" alt="Settings page for configuring API endpoint, provider, and location" width="320" />
+<img src="screenshots/popup.png" alt="Popup showing AQI gauge, location, and pollutant readings" width="320" />
+<img src="screenshots/settings.png" alt="Settings page for configuring API endpoint, provider, and location" width="320" />
 
 ## Install locally
 
@@ -24,7 +24,7 @@ A Chrome extension that keeps air-quality data visible in the browser.
 - Background service worker that fetches and caches the latest snapshot
 - Content script overlay for quick at-a-glance visibility on any webpage
 
-<img src="screenshots/Screenshot%202026-06-23%20at%203.03.39%20PM.png" alt="Compact overlay showing AQI and category on a webpage" width="200" />
+<img src="screenshots/overlay.png" alt="Compact overlay showing AQI and category on a webpage" width="200" />
 
 ## Connecting to OAQ (oaq.notf.in)
 
