@@ -155,4 +155,4 @@ Open a GitHub issue with steps to reproduce, the Chrome version, and (if relevan
 
 ## License
 
-[MIT](LICENSE) © Rainmatter Foundation
+[MIT](https://github.com/1n4NO/rainmatter-air-extension/blob/main/LICENSE) © https://github.com/1n4NO
